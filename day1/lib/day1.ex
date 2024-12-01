@@ -24,8 +24,6 @@ defmodule Day1 do
 
     case File.read(@fpath) do
       {:ok, value} ->
-        IO.puts(value)
-
         raw_input(value)
         |> IO.puts()
 
@@ -34,15 +32,18 @@ defmodule Day1 do
     end
   end
 
-  @spec raw_input(binary()) :: integer()
+  @spec raw_input(binary()) :: list(integer())
   defp raw_input(value) do
-    IO.read(value, :line)
-    |> Enum.each(&IO.puts(&1))
+    String.split(value, "\n")
+    |> Enum.each(&line_to_integer(&1))
 
-    0
+    [0]
   end
 
   @spec line_to_integer(binary()) :: {integer(), integer()}
   defp line_to_integer(line) do
+    [first, second, _] = String.split(line, ~r/\s/, trim: true)
+
+    {String.to_integer(first), String.to_integer(second)}
   end
 end
