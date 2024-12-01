@@ -24,3 +24,6 @@ day1-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# dont upload the src
+/inputs/
