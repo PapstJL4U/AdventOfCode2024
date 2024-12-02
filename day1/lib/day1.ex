@@ -6,8 +6,8 @@ defmodule Day1 do
   @fpath "./inputs/day1.txt"
   @spec sum_lists(list(integer()), list(integer()), integer()) :: integer()
   defp sum_lists(a, b, acc \\ 0)
-  defp sum_lists([], _, _), do: 0
-  defp sum_lists(_, [], _), do: 0
+  defp sum_lists([], _, acc), do: acc
+  defp sum_lists(_, [], acc), do: acc
 
   defp sum_lists(a, b, acc) do
     {f, apop} = List.pop_at(a, 0)
@@ -15,8 +15,6 @@ defmodule Day1 do
     acc = acc + abs(f - s)
     sum_lists(apop, bpop, acc)
   end
-
-  def path(), do: @fpath
 
   def main do
     IO.puts(@fpath)
@@ -32,18 +30,22 @@ defmodule Day1 do
     end
   end
 
-  @spec raw_input(binary()) :: list(integer())
+  @spec raw_input(binary()) :: integer()
   defp raw_input(value) do
-    String.split(value, "\n")
-    |> Enum.each(&line_to_integer(&1))
+    {left, right} =
+      String.split(value, "\n", trim: true)
+      |> Enum.map(&line_to_integer(&1))
+      |> Enum.unzip()
 
-    [0]
+    left = Enum.sort(left, :asc)
+    right = Enum.sort(right, :asc)
+    sum_lists(left, right)
   end
 
   @spec line_to_integer(binary()) :: {integer(), integer()}
   defp line_to_integer(line) do
-    [first, second, _] = String.split(line, ~r/\s/, trim: true)
-
+    [first, second] = String.split(line, ~r/\s/, trim: true)
+    # IO.inspect("#{String.to_integer(first)} :: #{String.to_integer(second)}")
     {String.to_integer(first), String.to_integer(second)}
   end
 end
