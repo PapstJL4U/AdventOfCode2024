@@ -22,15 +22,17 @@ defmodule Day1 do
 
     case File.read(@fpath) do
       {:ok, value} ->
-        raw_input(value)
-        |> IO.puts()
+        {total_dist, sim} =
+          raw_input(value)
+
+        IO.puts("#{total_dist} :: #{sim}")
 
       {:error, reasons} ->
         IO.puts(reasons)
     end
   end
 
-  @spec raw_input(binary()) :: integer()
+  @spec raw_input(binary()) :: {integer(), integer()}
   defp raw_input(value) do
     {left, right} =
       String.split(value, "\n", trim: true)
@@ -39,7 +41,14 @@ defmodule Day1 do
 
     left = Enum.sort(left, :asc)
     right = Enum.sort(right, :asc)
-    sum_lists(left, right)
+    td = sum_lists(left, right)
+
+    sim =
+      Enum.zip(left, left_in_right(left, right))
+      |> Enum.map(fn {l, c} -> l * c end)
+      |> Enum.sum()
+
+    {td, sim}
   end
 
   @spec line_to_integer(binary()) :: {integer(), integer()}
@@ -47,5 +56,10 @@ defmodule Day1 do
     [first, second] = String.split(line, ~r/\s/, trim: true)
     # IO.inspect("#{String.to_integer(first)} :: #{String.to_integer(second)}")
     {String.to_integer(first), String.to_integer(second)}
+  end
+
+  @spec left_in_right(list(), list()) :: list(integer())
+  defp left_in_right(left, right) do
+    Enum.map(left, fn l -> Enum.count(right, fn r -> r == l end) end)
   end
 end
