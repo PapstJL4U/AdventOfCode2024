@@ -7,6 +7,7 @@ defmodule Day2.MixProject do
       version: "0.1.0",
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
+      elixirc_path: ["lib", "assets"],
       deps: deps()
     ]
   end
