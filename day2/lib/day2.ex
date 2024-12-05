@@ -25,11 +25,10 @@ defmodule Day2 do
   end
 
   @spec up_or_down(list(integer())) :: list(boolean())
-  def up_or_down([]), do: 0
+  def up_or_down([]), do: [false]
+  def up_or_down([a, b]), do: [abs(a - b) < 4 && a != b]
 
-  def up_or_down(list) do
-    [head | tail] = list
-
+  def up_or_down([head | tail] = list) do
     if(head >= hd(tail)) do
       down(list)
     else
@@ -37,9 +36,7 @@ defmodule Day2 do
     end
   end
 
-  def up(list) do
-    [head | tail] = list
-
+  def up([head | tail]) do
     case tail do
       [] ->
         true
@@ -55,9 +52,7 @@ defmodule Day2 do
     end
   end
 
-  def down(list) do
-    [head | tail] = list
-
+  def down([head | tail]) do
     case tail do
       [] ->
         true
