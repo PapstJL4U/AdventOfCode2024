@@ -12,7 +12,7 @@ defmodule Day2 do
   def main() do
     Adventfile.get_file()
     |> Enum.map(fn x -> Adventfile.line_to_ints(x) end)
-    |> Enum.map(fn x -> check_ints(x) end)
+    |> Enum.map(fn x -> up_or_down(x) end)
     |> Enum.count(fn x -> x == true end)
   end
 
@@ -20,16 +20,12 @@ defmodule Day2 do
     @test
     |> String.split("\n", trim: true)
     |> Enum.map(fn x -> Adventfile.line_to_ints(x) end)
-    |> Enum.map(fn x -> check_ints(x) end)
+    |> Enum.map(fn x -> up_or_down(x) end)
     |> Enum.count(fn x -> x == true end)
   end
 
-  @spec check_ints(list(integer())) :: integer()
-  def check_ints([]), do: 0
-
-  def check_ints(list) do
-    up_or_down(list)
-  end
+  @spec up_or_down(list(integer())) :: list(boolean())
+  def up_or_down([]), do: 0
 
   def up_or_down(list) do
     [head | tail] = list
