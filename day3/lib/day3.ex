@@ -1,5 +1,4 @@
 defmodule Day3 do
-  alias Adventfile
   @example "mul(123,456)"
   @mul ~r/mul\(\d{1,3},\d{1,3}\)/
   @muldos ~r/mul\(\d{1,3},\d{1,3}\)|do\(\)|don't\(\)/
@@ -8,9 +7,9 @@ defmodule Day3 do
 
     Regex.scan(@muldos, input, return: :binary)
     |> List.flatten()
-    |> IO.inspect()
-    |> dodont(true, [])
-    |> Enum.map(fn x -> multiply(x) end)
+    # |> IO.inspect()
+    |> dos([])
+    |> Enum.map(&multiply(&1))
     |> Enum.sum()
   end
 
@@ -28,22 +27,24 @@ defmodule Day3 do
     a * b
   end
 
-  @spec dodont(list(String.t()), boolean(), list(String.t())) :: list(String.t())
-  def dodont([], _, acc), do: acc
+  @spec dos(list(String.t()), list(String.t())) :: list(String.t())
+  def dos([], acc), do: acc
 
-  def dodont([head | tail], true, acc) do
+  def dos([head | tail], acc) do
     case head do
-      "do()" -> dodont(tail, true, acc)
-      "don't()" -> dodont(tail, false, acc)
-      _ -> dodont(tail, true, [head | acc])
+      "do()" -> dos(tail, acc)
+      "don't()" -> dont(tail, acc)
+      _ -> dos(tail, [head | acc])
     end
   end
 
-  def dodont([head | tail], false, acc) do
+  @spec dont(list(String.t()), list(String.t())) :: list(String.t())
+  def dont([], acc), do: acc
+
+  def dont([head | tail], acc) do
     case head do
-      "do()" -> dodont(tail, true, acc)
-      "don't()" -> dodont(tail, false, acc)
-      _ -> dodont(tail, false, acc)
+      "do()" -> dos(tail, acc)
+      _ -> dont(tail, acc)
     end
   end
 end
