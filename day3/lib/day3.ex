@@ -1,18 +1,28 @@
 defmodule Day3 do
-  @moduledoc """
-  Documentation for `Day3`.
-  """
+  alias Adventfile
+  @example "mul(123,456)"
+  @mul ~r/mul\(\d{1,3},\d{1,3}\)/
 
-  @doc """
-  Hello world.
+  def main() do
+    input = Adventfile.get_simple_input()
 
-  ## Examples
+    Regex.scan(@mul, input, return: :binary)
+    |> IO.inspect()
+    |> Enum.map(fn x -> multiply(x) end)
+    |> Enum.sum()
+  end
 
-      iex> Day3.hello()
-      :world
+  @spec multiply(String.t()) :: integer()
+  def multiply(input) do
+    i_inputs =
+      input
+      |> List.first()
+      |> String.trim("mul(")
+      |> String.trim(")")
+      |> String.split(",")
 
-  """
-  def hello do
-    :world
+    a = i_inputs |> List.first() |> String.to_integer()
+    b = i_inputs |> List.last() |> String.to_integer()
+    a * b
   end
 end
