@@ -10,10 +10,20 @@ defmodule Day2 do
   1 3 6 7 9
   """
   def main() do
-    Adventfile.get_file()
-    |> Enum.map(fn x -> Adventfile.line_to_ints(x) end)
-    |> Enum.map(fn x -> up_or_down(x) end)
-    |> Enum.count(fn x -> x == true end)
+    int_list =
+      Adventfile.get_file()
+      |> Enum.map(fn x -> Adventfile.line_to_ints(x) end)
+
+    safe_list =
+      int_list
+      |> Enum.map(fn x -> up_or_down(x) end)
+
+    comb_list =
+      Enum.zip(int_list, safe_list)
+
+    amount =
+      safe_list
+      |> Enum.count(fn x -> x == true end)
   end
 
   def test() do
@@ -67,4 +77,9 @@ defmodule Day2 do
         end
     end
   end
+
+  # @spec recheck(list(boolean(), list(integer())) :: list(boolean())
+  # def recheck() do
+  #  [true] 
+  # end
 end
