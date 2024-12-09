@@ -9,6 +9,7 @@ defmodule Day3 do
     Regex.scan(@muldos, input, return: :binary)
     |> List.flatten()
     |> IO.inspect()
+    |> dodont(true, [])
     |> Enum.map(fn x -> multiply(x) end)
     |> Enum.sum()
   end
@@ -25,5 +26,24 @@ defmodule Day3 do
     a = i_inputs |> List.first() |> String.to_integer()
     b = i_inputs |> List.last() |> String.to_integer()
     a * b
+  end
+
+  @spec dodont(list(String.t()), boolean(), list(String.t())) :: list(String.t())
+  def dodont([], _, acc), do: acc
+
+  def dodont([head | tail], true, acc) do
+    case head do
+      "do()" -> dodont(tail, true, acc)
+      "don't()" -> dodont(tail, false, acc)
+      _ -> dodont(tail, true, [head | acc])
+    end
+  end
+
+  def dodont([head | tail], false, acc) do
+    case head do
+      "do()" -> dodont(tail, true, acc)
+      "don't()" -> dodont(tail, false, acc)
+      _ -> dodont(tail, false, acc)
+    end
   end
 end
