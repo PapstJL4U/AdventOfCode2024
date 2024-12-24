@@ -33,7 +33,7 @@ defmodule Day5 do
 
   @type row :: {list(integer()), boolean(), integer()}
   def main() do
-    input = @example
+    # input = @example
 
     input =
       Adventfile.get_simple_input()
@@ -46,14 +46,14 @@ defmodule Day5 do
       Enum.slice(input, 0..sep_index)
       |> Enum.map(&String.split(&1, "|", trim: true))
       |> Enum.reject(&(&1 == []))
-      |> Enum.map(&inner_parse(&1))
+      |> Enum.map(&inner_parse/1)
       |> Enum.map(&List.to_tuple/1)
 
     update =
       Enum.slice(input, (sep_index + 1)..Enum.count(input))
       |> Enum.map(&String.split(&1, ",", trim: true))
       |> Enum.reject(&(&1 == []))
-      |> Enum.map(&inner_parse(&1))
+      |> Enum.map(&inner_parse/1)
       |> Enum.map(fn x -> {x, true, round((Enum.count(x) - 1) / 2)} end)
       |> Enum.map(&check_rules(&1, rules))
 
@@ -70,7 +70,7 @@ defmodule Day5 do
 
   @spec inner_parse(list(String.t())) :: list(integer())
   def inner_parse(list) do
-    Enum.map(list, &String.to_integer(&1))
+    Enum.map(list, &String.to_integer/1)
   end
 
   @spec check_rules(row, list({integer(), integer()})) :: row
