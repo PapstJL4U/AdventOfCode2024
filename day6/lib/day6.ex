@@ -15,7 +15,10 @@ defmodule Day6 do
 
   @type guard :: :^ | :< | :> | :v
   def main() do
-    input = @example
+    input =
+      @example
+      |> Enum.map(&String.split(&1, "", trim: true))
+      |> Enum.reject(&(&1 == []))
   end
 
   @spec str_to_guard!(String.t()) :: guard
