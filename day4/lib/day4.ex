@@ -1,6 +1,6 @@
 defmodule Day4 do
-  @xmas ~r/x(?=[a-zA-Z]?mas)/iU
-
+  # @xmas ~r/x(?=[a-zA-Z]?mas)/iU
+  @xmas ~r/xmas/iU
   @example """
   MMMSXXMASM
   MSAMXMSMSA
@@ -19,9 +19,9 @@ defmodule Day4 do
     list =
       Adventfile.get_file()
 
-    list =
-      @example
-      |> String.split("\n", trim: true)
+    # list =
+    #  @example
+    # |> String.split("\n", trim: true)
 
     pad = String.length(Enum.at(list, 1))
     last = pad - 1
