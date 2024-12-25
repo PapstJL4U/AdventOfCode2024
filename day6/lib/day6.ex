@@ -21,7 +21,7 @@ defmodule Day6 do
       |> Enum.reject(&(&1 == []))
 
     width = input |> Enum.at(0) |> Enum.count()
-    finput = input |> Enum.flat_map(fn x -> x end)
+    finput = input |> List.flatten()
     # IO.inspect(finput)
     fin = move("^", finput, width)
     # IO.inspect(fin |> Enum.chunk_every(width))
@@ -119,20 +119,12 @@ defmodule Day6 do
 
   @spec cross(list(String.t()), integer()) :: list(String.t())
   def cross(list, i) do
-    Enum.concat([
-      Enum.slice(list, 0, i),
-      ["X"],
-      Enum.slice(list, (i + 1)..Enum.count(list))
-    ])
+    List.replace_at(list, i, "X")
   end
 
   @spec step(list(String.t()), integer(), String.t()) :: list(String.t())
   def step(list, i, guard) do
-    Enum.concat([
-      Enum.slice(list, 0, i),
-      [guard],
-      Enum.slice(list, (i + 1)..Enum.count(list))
-    ])
+    List.replace_at(list, i, guard)
   end
 
   @spec update(list(String.t()), integer(), integer(), String.t()) :: list(String.t())
