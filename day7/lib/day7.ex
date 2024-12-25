@@ -21,6 +21,16 @@ defmodule Day7 do
       |> Enum.reject(&(&1 == ""))
       |> Enum.map(&sol_equ/1)
       |> Enum.map(fn {sol, equ, i} -> {sol, equ, bin_combinations(i)} end)
+      |> Enum.map(fn {sol, equ, combs} -> {sol, Enum.map(combs, fn x -> combine(equ, x) end)} end)
+      |> Enum.map(fn {sol, combs} ->
+        {sol, Enum.map(combs, fn x -> is_solution?(x, sol) end)}
+      end)
+      |> Enum.map(fn {sol, combs} ->
+        {sol, Enum.any?(combs, fn x -> x == true end)}
+      end)
+      |> Enum.reject(fn {_, bool} -> bool == false end)
+      |> Enum.map(fn {val, _} -> val end)
+      |> Enum.sum()
   end
 
   @spec sol_equ(String.t()) :: {integer(), list(integer()), integer()}
@@ -43,5 +53,30 @@ defmodule Day7 do
   @spec bin_combinations(integer()) :: list(list(String.t()))
   def bin_combinations(i) do
     List.duplicate(["*", "+"], i) |> product()
+  end
+
+  @spec combine(list(integer()), list(String.t())) :: list()
+  def combine(ints, []), do: List.wrap(ints)
+  def combine([], _), do: []
+
+  def combine([hi | ti], [ho | to]) do
+    [hi, ho | combine(ti, to)]
+  end
+
+  @spec is_solution?(list(), integer()) :: boolean()
+  def is_solution?([acc], sol), do: sol == acc
+
+  def is_solution?([op1, op, op2 | tail], sol) do
+    a =
+      case op do
+        "*" -> op1 * op2
+        "+" -> op1 + op2
+      end
+
+    if(a > sol) do
+      false
+    else
+      is_solution?([a | tail], sol)
+    end
   end
 end
