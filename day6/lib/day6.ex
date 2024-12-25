@@ -53,6 +53,29 @@ defmodule Day6 do
     x
   end
 
+  @spec find_start({boolean(), list(), integer()}) :: {guard, integer()}
+  def find_start({_, row, index}) do
+    i = Enum.find_index(row, &(&1 == "<"))
+
+    if(i != nil) do
+      {:<, index}
+    else
+      i = Enum.find_index(row, &(&1 == ">"))
+
+      if(i != nil) do
+        {:>, index}
+      else
+        i = Enum.find_index(row, &(&1 == "^"))
+
+        if(i != nil) do
+          {:^, i}
+        else
+          {:v, i}
+        end
+      end
+    end
+  end
+
   @spec update_state(state) :: state()
   def update_state({:start, labyrinth, _}) do
     {direction, rowcol} =
@@ -73,7 +96,7 @@ defmodule Day6 do
   end
 
   def update_state({:>, labyrinth, row}) do
-    r = Enum.at(labyrinth, row) |> Enum.to_list()
+    r = Enum.at(labyrinth, row)
     index = Enum.find_index(r, fn x -> x == ">" end)
 
     if(index < Enum.count(r) - 1) do
@@ -82,11 +105,11 @@ defmodule Day6 do
       if(char == "#") do
         r = List.replace_at(r, index, "X")
         lab = List.replace_at(labyrinth, row, r)
-        {:v, lab, r}
+        update_state({:v, lab, r})
       else
         r = List.replace_at(r, index, "X")
         lab = List.replace_at(labyrinth, row, r)
-        {:>, lab, row}
+        update_state({:>, lab, row})
       end
     else
       r = List.replace_at(r, index, "X")
@@ -96,7 +119,7 @@ defmodule Day6 do
   end
 
   def update_state({:<, labyrinth, row}) do
-    r = Enum.at(labyrinth, row) |> Enum.to_list()
+    r = Enum.at(labyrinth, row)
     index = Enum.find_index(r, fn x -> x == "<" end)
 
     if(index > 0) do
@@ -105,22 +128,22 @@ defmodule Day6 do
       if(char == "#") do
         r = List.replace_at(r, index, "X")
         lab = List.replace_at(labyrinth, row, r)
-        {:^, lab, r}
+        update_state({:^, lab, r})
       else
         r = List.replace_at(r, index, "X")
         lab = List.replace_at(labyrinth, row, r)
-        {:<, lab, row}
+        update_state({:<, lab, row})
       end
     else
       r = List.replace_at(r, index, "X")
       lab = List.replace_at(labyrinth, row, r)
-      {:finish, lab, 0}
+      {:finish, lab |> Enum.map(&Tuple.to_list/1), 0}
     end
   end
 
   def update_state({:v, labyrinth, col}) do
-    lab_trans = Enum.zip(labyrinth)
-    r = Enum.at(lab_trans, col) |> Enum.to_list()
+    lab_trans = Enum.zip(labyrinth) |> Enum.map(&Tuple.to_list/1)
+    r = Enum.at(lab_trans, col)
     index = Enum.find_index(r, fn x -> x == "v" end)
 
     if(index < Enum.count(r) - 1) do
@@ -129,63 +152,45 @@ defmodule Day6 do
       if(char == "#") do
         r = List.replace_at(r, index, "X")
         lab = List.replace_at(labyrinth, col, r)
-        {:<, Enum.zip(lab), r}
+        update_state({:<, Enum.zip(lab) |> Enum.map(&Tuple.to_list/1), index})
       else
         r = List.replace_at(r, index, "X")
         lab = List.replace_at(labyrinth, col, r)
-        {:v, Enum.zip(lab), col}
+        update_state({:v, Enum.zip(lab) |> Enum.map(&Tuple.to_list/1), col + 1})
       end
     else
       r = List.replace_at(r, index, "X")
       lab = List.replace_at(labyrinth, col, r)
-      {:finish, Enum.zip(lab), 0}
+      {:finish, Enum.zip(lab) |> Enum.map(&Tuple.to_list/1), 0}
     end
   end
 
   def update_state({:^, labyrinth, col}) do
-    lab_trans = Enum.zip(labyrinth)
-    r = Enum.at(lab_trans, col) |> Enum.to_list()
+    lab_trans = Enum.zip(labyrinth) |> Enum.map(&Tuple.to_list/1)
+    r = Enum.at(lab_trans, col)
     index = Enum.find_index(r, fn x -> x == "^" end)
 
+    IO.inspect(r)
+    IO.inspect(col)
+
     if(index > 0) do
-      char = Enum.at(col, index - 1)
+      char = Enum.at(labyrinth, index - 1)
 
       if(char == "#") do
-        r = List.replace_at(r, index, "X")
-        lab = List.replace_at(labyrinth, col, r)
-        {:>, Enum.zip(lab), r}
+        old = List.replace_at(r, index, "X")
+        lab = List.replace_at(labyrinth, col, old)
+        update_state({:>, Enum.zip(lab) |> Enum.map(&Tuple.to_list/1), index})
       else
-        r = List.replace_at(r, index, "X")
+        Enum.at(lab_trans, col)
+        new = List.replace_at(r, index, "^")
+        old = List.replace_at(r, index, "X")
         lab = List.replace_at(labyrinth, col, r)
-        {:^, Enum.zip(lab), col}
+        update_state({:^, Enum.zip(lab) |> Enum.map(&Tuple.to_list/1), col - 1})
       end
     else
       r = List.replace_at(r, index, "X")
       lab = List.replace_at(labyrinth, col, r)
-      {:finish, Enum.zip(lab), 0}
-    end
-  end
-
-  @spec find_start({boolean(), list(), integer()}) :: {guard, integer()}
-  def find_start({_, row, index}) do
-    i = Enum.find_index(row, &(&1 == "<"))
-
-    if(i != nil) do
-      {:<, index}
-    else
-      i = Enum.find_index(row, &(&1 == ">"))
-
-      if(i != nil) do
-        {:>, index}
-      else
-        i = Enum.find_index(row, &(&1 == "^"))
-
-        if(i != nil) do
-          {:^, index}
-        else
-          {:v, index}
-        end
-      end
+      {:finish, Enum.zip(lab) |> Enum.map(&Tuple.to_list/1), 0}
     end
   end
 end
