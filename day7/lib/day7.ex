@@ -16,8 +16,9 @@ defmodule Day7 do
 
   def main() do
     # Adventfile.get_file()
+    # @example
     input =
-      @example
+      Adventfile.get_file()
       |> Enum.reject(&(&1 == ""))
       |> Enum.map(&sol_equ/1)
       |> Enum.map(fn {sol, equ, i} -> {sol, equ, bin_combinations(i)} end)
