@@ -13,184 +13,132 @@ defmodule Day6 do
            """
            |> String.split("\n")
 
-  @type guard :: :^ | :< | :> | :v | :start | :finish
-  @type state :: {guard, list(), integer()}
   def main() do
+    # @example
     input =
-      @example
+      Adventfile.get_file()
       |> Enum.map(&String.split(&1, "", trim: true))
       |> Enum.reject(&(&1 == []))
 
-    state = status({:start, input, 0})
-
-    update_state(state)
+    width = input |> Enum.at(0) |> Enum.count()
+    finput = input |> Enum.flat_map(fn x -> x end)
+    # IO.inspect(finput)
+    fin = move("^", finput, width)
+    # IO.inspect(fin |> Enum.chunk_every(width))
+    Enum.count(fin, fn x -> x == "X" end)
   end
 
-  @spec str_to_guard!(String.t()) :: guard
-  def str_to_guard!(str) do
-    case str do
-      "^" -> :^
-      "<" -> :<
-      ">" -> :>
-      "v" -> :v
-      _ -> raise "Not a guard!"
-    end
-  end
+  @spec move(String.t(), list(String.t()), integer()) :: list(String.t())
+  def move("^", lab, width) do
+    pos_now = Enum.find_index(lab, &(&1 == "^"))
 
-  @spec str_to_guard(String.t()) :: {:ok, guard} | {:err, String.t()}
-  def str_to_guard(str) do
-    case str do
-      "^" -> {:ok, :^}
-      "<" -> {:ok, :<}
-      ">" -> {:ok, :>}
-      "v" -> {:ok, :v}
-      _ -> raise {:err, "Not a guard!"}
-    end
-  end
+    if(tr(pos_now, width) > 0) do
+      pos_next = pos_now - width
 
-  @spec status(state) :: state
-  def status(x) do
-    x
-  end
-
-  @spec find_start({boolean(), list(), integer()}) :: {guard, integer()}
-  def find_start({_, row, index}) do
-    i = Enum.find_index(row, &(&1 == "<"))
-
-    if(i != nil) do
-      {:<, index}
-    else
-      i = Enum.find_index(row, &(&1 == ">"))
-
-      if(i != nil) do
-        {:>, index}
+      if(Enum.at(lab, pos_next) != "#") do
+        new_lab = update(lab, pos_now, pos_next, "^")
+        move("^", new_lab, width)
       else
-        i = Enum.find_index(row, &(&1 == "^"))
-
-        if(i != nil) do
-          {:^, i}
-        else
-          {:v, i}
-        end
-      end
-    end
-  end
-
-  @spec update_state(state) :: state()
-  def update_state({:start, labyrinth, _}) do
-    {direction, rowcol} =
-      Enum.with_index(labyrinth)
-      |> Enum.map(fn {row, index} ->
-        {Enum.any?(row, fn x -> x == "<" || x == ">" || x == "v" || x == "^" end), row, index}
-      end)
-      |> Enum.filter(fn {lab, _, _} -> lab == true end)
-      |> Enum.at(0)
-      |> find_start()
-
-    IO.inspect(labyrinth)
-    update_state({direction, labyrinth, rowcol})
-  end
-
-  def update_state({:finish, labyrinth, row}) do
-    {:finish, labyrinth, row}
-  end
-
-  def update_state({:>, labyrinth, row}) do
-    r = Enum.at(labyrinth, row)
-    index = Enum.find_index(r, fn x -> x == ">" end)
-
-    if(index < Enum.count(r) - 1) do
-      char = Enum.at(row, index + 1)
-
-      if(char == "#") do
-        r = List.replace_at(r, index, "X")
-        lab = List.replace_at(labyrinth, row, r)
-        update_state({:v, lab, r})
-      else
-        r = List.replace_at(r, index, "X")
-        lab = List.replace_at(labyrinth, row, r)
-        update_state({:>, lab, row})
+        new_lab = step(lab, pos_now, ">")
+        move(">", new_lab, width)
       end
     else
-      r = List.replace_at(r, index, "X")
-      lab = List.replace_at(labyrinth, row, r)
-      {:finish, lab, 0}
+      lab |> cross(pos_now)
     end
   end
 
-  def update_state({:<, labyrinth, row}) do
-    r = Enum.at(labyrinth, row)
-    index = Enum.find_index(r, fn x -> x == "<" end)
+  def move(">", lab, width) do
+    pos_now = Enum.find_index(lab, &(&1 == ">"))
 
-    if(index > 0) do
-      char = Enum.at(row, index - 1)
+    if(tc(pos_now, width) < width - 1) do
+      pos_next = pos_now + 1
 
-      if(char == "#") do
-        r = List.replace_at(r, index, "X")
-        lab = List.replace_at(labyrinth, row, r)
-        update_state({:^, lab, r})
+      if(Enum.at(lab, pos_next) != "#") do
+        new_lab = update(lab, pos_now, pos_next, ">")
+        move(">", new_lab, width)
       else
-        r = List.replace_at(r, index, "X")
-        lab = List.replace_at(labyrinth, row, r)
-        update_state({:<, lab, row})
+        new_lab = step(lab, pos_now, "v")
+        move("v", new_lab, width)
       end
     else
-      r = List.replace_at(r, index, "X")
-      lab = List.replace_at(labyrinth, row, r)
-      {:finish, lab |> Enum.map(&Tuple.to_list/1), 0}
+      lab |> cross(pos_now)
     end
   end
 
-  def update_state({:v, labyrinth, col}) do
-    lab_trans = Enum.zip(labyrinth) |> Enum.map(&Tuple.to_list/1)
-    r = Enum.at(lab_trans, col)
-    index = Enum.find_index(r, fn x -> x == "v" end)
+  def move("v", lab, width) do
+    pos_now = Enum.find_index(lab, &(&1 == "v"))
 
-    if(index < Enum.count(r) - 1) do
-      char = Enum.at(col, index + 1)
+    if(tr(pos_now, width) < width - 1) do
+      pos_next = pos_now + width
 
-      if(char == "#") do
-        r = List.replace_at(r, index, "X")
-        lab = List.replace_at(labyrinth, col, r)
-        update_state({:<, Enum.zip(lab) |> Enum.map(&Tuple.to_list/1), index})
+      if(Enum.at(lab, pos_next) != "#") do
+        new_lab = update(lab, pos_now, pos_next, "v")
+        move("v", new_lab, width)
       else
-        r = List.replace_at(r, index, "X")
-        lab = List.replace_at(labyrinth, col, r)
-        update_state({:v, Enum.zip(lab) |> Enum.map(&Tuple.to_list/1), col + 1})
+        new_lab = step(lab, pos_now, "<")
+        move("<", new_lab, width)
       end
     else
-      r = List.replace_at(r, index, "X")
-      lab = List.replace_at(labyrinth, col, r)
-      {:finish, Enum.zip(lab) |> Enum.map(&Tuple.to_list/1), 0}
+      lab |> cross(pos_now)
     end
   end
 
-  def update_state({:^, labyrinth, col}) do
-    lab_trans = Enum.zip(labyrinth) |> Enum.map(&Tuple.to_list/1)
-    r = Enum.at(lab_trans, col)
-    index = Enum.find_index(r, fn x -> x == "^" end)
+  def move("<", lab, width) do
+    pos_now = Enum.find_index(lab, &(&1 == "<"))
 
-    IO.inspect(r)
-    IO.inspect(col)
+    if(tc(pos_now, width) > 0) do
+      pos_next = pos_now - 1
 
-    if(index > 0) do
-      char = Enum.at(labyrinth, index - 1)
-
-      if(char == "#") do
-        old = List.replace_at(r, index, "X")
-        lab = List.replace_at(labyrinth, col, old)
-        update_state({:>, Enum.zip(lab) |> Enum.map(&Tuple.to_list/1), index})
+      if(Enum.at(lab, pos_next) != "#") do
+        new_lab = update(lab, pos_now, pos_next, "<")
+        move("<", new_lab, width)
       else
-        Enum.at(lab_trans, col)
-        new = List.replace_at(r, index, "^")
-        old = List.replace_at(r, index, "X")
-        lab = List.replace_at(labyrinth, col, r)
-        update_state({:^, Enum.zip(lab) |> Enum.map(&Tuple.to_list/1), col - 1})
+        new_lab = step(lab, pos_now, "^")
+        move("^", new_lab, width)
       end
     else
-      r = List.replace_at(r, index, "X")
-      lab = List.replace_at(labyrinth, col, r)
-      {:finish, Enum.zip(lab) |> Enum.map(&Tuple.to_list/1), 0}
+      lab |> cross(pos_now)
     end
+  end
+
+  @doc """
+  returns the "virtual" row of any position
+  """
+  @spec tr(integer(), integer()) :: integer()
+  def tr(pos, width) do
+    Integer.floor_div(pos, width)
+  end
+
+  @doc """
+  returns the "virtual" col of any position
+  """
+  @spec tc(integer(), integer()) :: integer()
+  def tc(pos, width) do
+    Integer.mod(pos, width)
+  end
+
+  @spec cross(list(String.t()), integer()) :: list(String.t())
+  def cross(list, i) do
+    Enum.concat([
+      Enum.slice(list, 0, i),
+      ["X"],
+      Enum.slice(list, (i + 1)..Enum.count(list))
+    ])
+  end
+
+  @spec step(list(String.t()), integer(), String.t()) :: list(String.t())
+  def step(list, i, guard) do
+    Enum.concat([
+      Enum.slice(list, 0, i),
+      [guard],
+      Enum.slice(list, (i + 1)..Enum.count(list))
+    ])
+  end
+
+  @spec update(list(String.t()), integer(), integer(), String.t()) :: list(String.t())
+  def update(list, old, new, guard) do
+    list
+    |> cross(old)
+    |> step(new, guard)
   end
 end
